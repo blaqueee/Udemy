@@ -1,13 +1,12 @@
 package edu.kairat_tobokelov.pet_project.configuration;
 
-import edu.kairat_tobokelov.pet_project.jwt.AuthEntryPointJwt;
-import edu.kairat_tobokelov.pet_project.jwt.AuthTokenFilter;
+import edu.kairat_tobokelov.pet_project.jwt.JwtAuthenticationEntryPoint;
+import edu.kairat_tobokelov.pet_project.jwt.JwtAuthenticationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -15,14 +14,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+    private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
     private final UserDetailsService userDetailsService;
-    private final AuthEntryPointJwt unauthorizedHandler;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Bean
     public PasswordEncoder getEncoder() {
@@ -43,7 +43,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+
         http.authorizeRequests()
+                .antMatchers("/user").hasRole("USER")
+                .antMatchers("/mentor").hasRole("MENTOR")
                 .anyRequest().permitAll();
 
         http.csrf().disable()
@@ -53,4 +57,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http.exceptionHandling().authenticationEntryPoint(unauthorizedHandler);
     }
+
+
 }

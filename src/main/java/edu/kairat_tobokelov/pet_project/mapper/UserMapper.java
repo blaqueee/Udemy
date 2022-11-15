@@ -1,8 +1,9 @@
 package edu.kairat_tobokelov.pet_project.mapper;
 
+import edu.kairat_tobokelov.pet_project.dto.JwtDto;
 import edu.kairat_tobokelov.pet_project.dto.UserDto;
 import edu.kairat_tobokelov.pet_project.dto.form.RegisterRequest;
-import edu.kairat_tobokelov.pet_project.entity.CustomUserDetails;
+import edu.kairat_tobokelov.pet_project.jwt.CustomUserDetails;
 import edu.kairat_tobokelov.pet_project.entity.Type;
 import edu.kairat_tobokelov.pet_project.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,18 @@ public class UserMapper {
                 .experience(user.getExperience())
                 .audience(user.getAudience())
                 .isMentor(user.isMentor())
+                .build();
+    }
+
+    public JwtDto toJwtResponseDto(CustomUserDetails userDetails, String token) {
+        return JwtDto.builder()
+                .id(userDetails.getId())
+                .firstName(userDetails.getFirstName())
+                .lastName(userDetails.getLastName())
+                .email(userDetails.getEmail())
+                .role(userDetails.getType())
+                .token(token)
+                .tokenType("Bearer")
                 .build();
     }
 }

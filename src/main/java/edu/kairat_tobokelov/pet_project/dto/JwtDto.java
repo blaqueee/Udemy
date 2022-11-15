@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class JwtResponseDto {
+public class JwtDto {
     private Long id;
 
     @JsonProperty("first_name")

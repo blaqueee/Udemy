@@ -1,4 +1,4 @@
-package edu.kairat_tobokelov.pet_project.service;
+package edu.kairat_tobokelov.pet_project.jwt;
 
 import edu.kairat_tobokelov.pet_project.entity.User;
 import edu.kairat_tobokelov.pet_project.mapper.UserMapper;

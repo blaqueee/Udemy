@@ -1,19 +1,15 @@
 package edu.kairat_tobokelov.pet_project.controller;
 
-import edu.kairat_tobokelov.pet_project.dto.JwtResponseDto;
 import edu.kairat_tobokelov.pet_project.dto.form.LoginRequest;
 import edu.kairat_tobokelov.pet_project.dto.form.RegisterRequest;
-import edu.kairat_tobokelov.pet_project.entity.CustomUserDetails;
+import edu.kairat_tobokelov.pet_project.dto.form.ResetPasswordRequest;
 import edu.kairat_tobokelov.pet_project.exception.EmailAlreadyExistsException;
-import edu.kairat_tobokelov.pet_project.jwt.JwtUtils;
+import edu.kairat_tobokelov.pet_project.jwt.CustomUserDetails;
 import edu.kairat_tobokelov.pet_project.service.MainService;
+import edu.kairat_tobokelov.pet_project.service.PasswordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -23,9 +19,7 @@ import javax.validation.Valid;
 @RequestMapping("/")
 public class MainController {
     private final MainService mainService;
-
-    private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
+    private final PasswordService passwordService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -38,42 +32,32 @@ public class MainController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),
-                    loginRequest.getPassword()
-                )
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        String token = jwtUtils.generateJwtToken(auth);
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-
-
-        var response = JwtResponseDto.builder()
-                .id(userDetails.getId())
-                .firstName(userDetails.getFirstName())
-                .lastName(userDetails.getLastName())
-                .email(userDetails.getEmail())
-                .role(userDetails.getType())
-                .token(token)
-                .tokenType("Bearer")
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(mainService.login(loginRequest));
     }
 
-    @GetMapping("/user")
-    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user") // route for testing jwt access token depending on role
     public ResponseEntity<String> userRoute(Authentication authentication) {
         var user = (CustomUserDetails) authentication.getPrincipal();
         return ResponseEntity.ok("hello user");
     }
 
-    @GetMapping("/mentor")
-    @PreAuthorize("hasRole('MENTOR')")
+    @GetMapping("/mentor") // route for testing jwt access token depending on role
     public ResponseEntity<String> mentorRoute(Authentication authentication) {
         var mentor = (CustomUserDetails) authentication.getPrincipal();
         return ResponseEntity.ok("hello mentor");
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<String> sendMailWithPasswordResetUrl(@RequestParam(defaultValue = "none") String email) {
+        if ("none".equals(email)) return ResponseEntity.badRequest().body("Empty email!");
+        return passwordService.sendMailWithUrl(email);
+    }
+
+    @PostMapping("/reset/{resetCode}")
+    public ResponseEntity<String> resetPassword(@PathVariable(name = "resetCode") String resetCode,
+                                                @Valid @RequestBody ResetPasswordRequest resetForm) {
+        if (!resetForm.getPassword().equals(resetForm.getRepeatedPassword()))
+            return ResponseEntity.badRequest().body("Your repeated password is not similar with password!");
+        return passwordService.resetPassword(resetCode, resetForm.getPassword());
     }
 }

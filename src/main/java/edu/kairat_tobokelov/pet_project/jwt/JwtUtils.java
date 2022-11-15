@@ -1,6 +1,5 @@
 package edu.kairat_tobokelov.pet_project.jwt;
 
-import edu.kairat_tobokelov.pet_project.entity.CustomUserDetails;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -1,7 +1,9 @@
-package edu.kairat_tobokelov.pet_project.entity;
+package edu.kairat_tobokelov.pet_project.jwt;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.kairat_tobokelov.pet_project.entity.Audience;
+import edu.kairat_tobokelov.pet_project.entity.Experience;
+import edu.kairat_tobokelov.pet_project.entity.Type;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
